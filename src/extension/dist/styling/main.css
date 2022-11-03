@@ -1,0 +1,12 @@
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,700);
+@import url('https://fonts.googleapis.com/css2?family=Capriola&display=swap');
+
+body {
+  background: #F7F8F9;
+  font-family: 'Open Sans', sans-serif;
+  width: 400px;
+  height: 480px;
+  margin: 0;
+  padding-top: 100px;
+}
+
