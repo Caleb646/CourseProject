@@ -121,10 +121,11 @@ class CampusWireScraper:
         all_posts_messages_by_group = {group_id : {} for group_id in self.m_group_ids}
         for group_id in self.m_group_ids:
             posts, utc_now, exception = self._run(group_id, before)
-            all_posts_messages_by_group.update(posts)
+            all_posts_messages_by_group.update(posts) # save posts
             if exception: # try to recover from exception
                 time.sleep(5)
                 posts, utc_now, exception = self._run(group_id, str(utc_now))
+                all_posts_messages_by_group.update(posts)
                 if exception: # if another exception is encountered reraise it
                     print("Ended with before of [{}]".format(utc_now))
                     self._save(self._path_outfile(group_id, utc_now), all_posts_messages_by_group)
