@@ -9,5 +9,5 @@
 #To Update src/.js files
 ```
 Run this command inside the extension directory:
-npm build
+npm run build
 ```
