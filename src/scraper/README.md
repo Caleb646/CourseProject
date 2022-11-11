@@ -11,7 +11,7 @@
   The password used to login to your Coursera account.
 5. CHROME_DRIVER_PATH
   The path to the downloaded Selenium Webdriver for Chrome.
-  The driver can be downloaded [here](https://chromedriver.chromium.org/downloads).
+  The driver can be downloaded here https://chromedriver.chromium.org/downloads.
  ```
 # To Run the Scrapers
 ## Inside the src/scraper directory
