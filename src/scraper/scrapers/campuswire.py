@@ -1,15 +1,16 @@
 import requests
 import os
-from pathlib import Path
 import json
 import time
 from datetime import datetime, timedelta, timezone
 
+from .basescraper import BaseScraper, DEFAULT_DATA_DIR
+
 class CampusWireScraper:
-    BASE_OUTPUT_DIR = os.path.join(str(Path(__file__).resolve().parent), "data/campuswire/")
+    DEFAULT_DATA_DIR = os.path.join(DEFAULT_DATA_DIR, "campuswire/")
     def __init__(self, base_url, groups, 
                 auth_token, request_interval: float = 0.5, 
-                output_dir = BASE_OUTPUT_DIR, output: bool = False,
+                output_dir = DEFAULT_DATA_DIR, output: bool = False,
                 posts_per_request = 50) -> None:
         assert groups and all(groups), groups # make sure groups is not empty and all groups are non-empty
         assert auth_token, auth_token

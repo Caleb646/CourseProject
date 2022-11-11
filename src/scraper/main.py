@@ -1,16 +1,41 @@
-import settings
-from campuswire import CampusWireScraper
+from scrapers.campuswire import CampusWireScraper
+from scrapers.coursera import CouseraScraper
+
+from multiprocessing import Process
 import json
 
+from tests.test_main import main as test_main
 
-if __name__ == "__main__":
+def run_tests():
+    test_main()
 
-    scraper = CampusWireScraper(settings.CAMPUS_WIRE_API_URL, settings.CAMPUS_WIRE_GROUP_IDS, settings.CAMPUS_WIRE_AUTH_TOKEN) 
+def run_campuswire(url, group_ids, auth_token):
+    scraper = CampusWireScraper(url, group_ids, auth_token) 
     scraper.scrape()
 
-    data_path = r"C:/Users/caleb/Coding Projects/CS 410 Projects/Final Project/src/scraper/data/campuswire/984118d3-29f1-4a34-9a3b-14c65608f28c/08-19-2022T14-52-49.json"
+def run_coursera(url, email, password, chrome_path):
+    scraper = CouseraScraper(url, email, password)
+    # NOTE when first starting the scraper it should be ran with headless=False.
+    scraper.init_driver(chrome_path, headless=False)
+    scraper.run()
 
-    # with open(data_path, mode="r") as f:
-    #     data = json.load(f)
-    #     for group_id, posts, in data.items():
-    #         print(len(posts))
+if __name__ == "__main__":
+    import settings
+    
+    cw_url = settings.CAMPUS_WIRE_API_URL
+    cw_group_ids = settings.CAMPUS_WIRE_GROUP_IDS
+    cw_auth_token = settings.CAMPUS_WIRE_AUTH_TOKEN
+
+    c_url = settings.COURSERA_URL
+    c_email = settings.COURSERA_EMAIL
+    c_password = settings.COURSERA_PASSWORD
+    c_chrome_path = settings.CHROME_DRIVER_PATH
+
+    p1 = Process(target=run_campuswire, args=(cw_url, cw_group_ids, cw_auth_token))
+    p2 = Process(target=run_coursera, args=(c_url, c_email, c_password, c_chrome_path))
+
+    p1.start()
+    p2.start()
+
+    p1.join()
+    p2.join()
