@@ -1,5 +1,5 @@
 # To Setup .env file
-## The following two variables have to be placed in a .env file in the src/scraper directory. 
+## The following variables have to be placed in a .env file in the src/scraper directory. 
 ```
 1. CAMPUS_WIRE_AUTH_TOKEN
   The auth token can be found with dev tools open while on Campuswire.
