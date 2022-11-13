@@ -1,4 +1,7 @@
-from tests.test_main import main as test_main
+import unittest
+
+from tests.tests import scraper_test_suite
 
 if __name__ == "__main__":
-    test_main()
+    runner = unittest.TextTestRunner()
+    runner.run(scraper_test_suite)
