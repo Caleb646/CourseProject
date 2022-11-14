@@ -1,3 +1,7 @@
+import unittest
+import os
+
+from .test_settings import TEST_DIR, CACHE_FNAME, CACHE_PATH
 import scrapers.coursera as c  
 
 # invalid urls contain the words quiz, exam, #tag_name, and don't contain www.coursera.org and cs-410
@@ -33,22 +37,37 @@ valid_urls = [
     "https://www.coursera.org/learn/cs-410/supplement/dE9Wb/how-to-use-proctoru-for-s", 
     ]
 
-def test_scraper_url_rules(scraper, urls):
-    res = []
-    for url in urls:
-        url, valid = scraper._process_url(url)
-        if valid:
-            res.append(url)
-    return res
+class TestCourseraScraper(unittest.TestCase):
 
-def main():
-    scraper = c.CouseraScraper("", "", "")
-    processed_urls = test_scraper_url_rules(scraper, invalid_urls)
-    assert not processed_urls, "Processed Urls should be empty not [{}]".format(processed_urls)
-    processed_urls = test_scraper_url_rules(scraper, valid_urls)
-    assert processed_urls, "Processed Urls should not be empty [{}]".format(processed_urls)
+    @classmethod
+    def setUpClass(self):
+        self.url = "https://test/test/test/test"
+        self.output_dir = TEST_DIR
+        self.email = "test@email.com"
+        self.password = "12345"
+        self.scraper = c.CouseraScraper(self.url, self.email, self.password, output_dir=self.output_dir)
 
-    print("All Tests for CourseraScraper Class Passed Successfully.")
+    def test_init(self):
+        self.assertEqual(self.url, self.scraper.m_base_url)
 
-if __name__ == "__main__":
-    main()
+        self.assertEqual(self.email, self.scraper.m_email)
+
+        self.assertEqual(self.password, self.scraper.m_password)
+
+        self.assertEqual(self.output_dir, self.scraper.m_output_dir)
+
+    def test_url_rules_w_invalid_urls(self):
+        res = []
+        for url in invalid_urls:
+            url, valid = self.scraper._process_url(url)
+            if valid:
+                res.append(url)
+        self.assertEqual(len(res), 0)
+
+    def test_url_rules_w_valid_urls(self):
+        res = []
+        for url in valid_urls:
+            url, valid = self.scraper._process_url(url)
+            if valid:
+                res.append(url)
+        self.assertEqual(len(res), len(valid_urls))
