@@ -224,6 +224,9 @@ class CouseraScraper(BaseScraper):
         data = self.m_cache[self.m_page_content_cache_key]
         self._save_file(self.m_output_path, data)
 
+        # shutdown driver
+        self.quit()
+
     def quit(self):
         self.m_driver.quit()
 
