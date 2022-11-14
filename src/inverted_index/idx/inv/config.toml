@@ -1,6 +1,6 @@
 stop-words = "stopwords.txt"
 prefix = "."
-dataset = "campuswire"
+dataset = "corpus"
 corpus = "line.toml"
 index = "idx"
 [ranker]
