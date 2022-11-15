@@ -14,7 +14,7 @@ from fnmatch import fnmatch
 class CorpusProcessor:
     def __init__(self):
         self.absolute_path = os.path.dirname(__file__)
-        self.relative_path = "../scraper/data/"
+        self.relative_path = "data/"
         self.full_path = os.path.join(self.absolute_path, self.relative_path)
         self.json_files = []
         self.posts = []
@@ -74,38 +74,27 @@ class CorpusProcessor:
     def make_index(self):
         metapy.index.make_inverted_index('config.toml')
 
+def handle_query(string):
+    cp = CorpusProcessor()
+    cp.read_json()
+    cp.construct_corpus()
+    cp.write_corpus()
+    cp.write_docid()
+    cp.make_index()
 
-# a bit of test code
+    idx = metapy.index.make_inverted_index('config.toml')
+    ranker = metapy.index.OkapiBM25()
+    query = metapy.index.Document()
 
-cp = CorpusProcessor()
-cp.read_json()
-cp.construct_corpus()
-test_corpus = cp.return_corpus()
-cp.write_corpus()
-cp.write_docid()
-cp.make_index()
-
-
-idx = metapy.index.make_inverted_index('config.toml')
-ranker = metapy.index.OkapiBM25()
-query = metapy.index.Document()
-
-
-# Search example to test
-
-query.content('submission in CMT')
-
-top_docs = ranker.score(idx, query, num_results=5)
-
-for num, (d_id, _) in enumerate(top_docs):
-    content = idx.metadata(d_id).get('content')
-    docid = idx.metadata(d_id).get('docid')
-    print("{}. {}...\n".format(num + 1, content[0:250]))
-    
-    
-
-    
-    
-    
-    
-    
+    # Search example to test
+    query.content(string)
+    print("Stalls Here...")
+    top_docs = ranker.score(idx, query, num_results=5)
+    print("Congrats, you passed!")
+    for num, (d_id, _) in enumerate(top_docs):
+        content = idx.metadata(d_id).get('content')
+        # docid = idx.metadata(d_id).get('docid')
+        return {
+            'body': "{}. {}...\n".format(num + 1, content[0:250])
+        }
+        # print("{}. {}...\n".format(num + 1, content[0:250]))
