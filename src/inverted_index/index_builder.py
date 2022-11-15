@@ -13,7 +13,6 @@ from fnmatch import fnmatch
 
 class CorpusProcessor:
     def __init__(self):
-        self.absolute_path = os.path.dirname(__file__)        
         self.absolute_path = os.path.dirname(__file__)
         self.relative_path = "../scraper/data/"
         self.full_path = os.path.join(self.absolute_path, self.relative_path)
@@ -32,24 +31,25 @@ class CorpusProcessor:
         for file in self.json_files:
             datafile = open(file)
             data = json.load(datafile)
-            self.posts.append(list(data.values()))
+            self.posts.append(list(data.items()))
             
         self.coursera_data = self.posts[1]
-        self.campuswire_data = self.posts[0][0]
+        self.campuswire_data = self.posts[0][0][1]
     
     def construct_corpus(self):
         for post_id, post_content in self.campuswire_data.items():
             current_post = post_content
             post_title = current_post['post']['title']
             post_body = current_post['post']['body']
+            post_url = 'https://campuswire.com/c/G984118D3/feed/' + str(current_post['post']['number'])
             replies = []
             for messages in current_post['messages']:
                 replies.append(messages['body'])
-            self.temp_corpus[post_id] = ((post_title + ' ' + post_body + ' '.join(replies)).replace("\n", " "))
+            self.temp_corpus[post_id] = ((post_url + ' ' + post_title + ' ' + post_body + ' '.join(replies)).replace("\n", " "))
 
         for post_id, post in enumerate(self.coursera_data):
             index_id = 'Coursera' + str(post_id)
-            current_post = list(post.values())[0]
+            current_post = post[0] + str(post[1].values())
             self.temp_corpus[index_id] = ((current_post).replace("\n", " "))
 
     def return_corpus(self):
@@ -77,38 +77,33 @@ class CorpusProcessor:
 
 # a bit of test code
 
-# cp = CorpusProcessor()
-# cp.read_json()
-# cp.construct_corpus()
-# test_corpus = cp.return_corpus()
-# cp.write_corpus()
-# cp.write_docid()
-# cp.make_index()
+cp = CorpusProcessor()
+cp.read_json()
+cp.construct_corpus()
+test_corpus = cp.return_corpus()
+cp.write_corpus()
+cp.write_docid()
+cp.make_index()
 
 
-# idx = metapy.index.make_inverted_index('config.toml')
-# ranker = metapy.index.OkapiBM25()
-# query = metapy.index.Document()
+idx = metapy.index.make_inverted_index('config.toml')
+ranker = metapy.index.OkapiBM25()
+query = metapy.index.Document()
 
 
 # Search example to test
 
-# query.content('Exam 1 content')
+query.content('submission in CMT')
 
-# top_docs = ranker.score(idx, query, num_results=5)
+top_docs = ranker.score(idx, query, num_results=5)
 
-# for num, (d_id, _) in enumerate(top_docs):
-#     content = idx.metadata(d_id).get('content')
-#     print("{}. {}...\n".format(num + 1, content[0:250]))
+for num, (d_id, _) in enumerate(top_docs):
+    content = idx.metadata(d_id).get('content')
+    docid = idx.metadata(d_id).get('docid')
+    print("{}. {}...\n".format(num + 1, content[0:250]))
     
     
-    
-    
-    
-    
-    
-    
-    
+
     
     
     

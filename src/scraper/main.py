@@ -4,11 +4,6 @@ from scrapers.coursera import CouseraScraper
 from multiprocessing import Process
 import json
 
-from tests.test_main import main as test_main
-
-def run_tests():
-    test_main()
-
 def run_campuswire(url, group_ids, auth_token):
     scraper = CampusWireScraper(url, group_ids, auth_token) 
     scraper.scrape()
