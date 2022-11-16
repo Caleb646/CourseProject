@@ -5,6 +5,8 @@ Created on Thu Nov  3 09:43:18 2022
 @author: Robin
 """
 
+from multiprocessing import Process, Pipe
+
 import json
 import os
 import metapy
@@ -72,29 +74,111 @@ class CorpusProcessor:
                 file.write('{}\n'.format(value))
                 
     def make_index(self):
-        metapy.index.make_inverted_index('config.toml')
+        path = os.path.join(self.absolute_path, "config.toml")
+        #metapy.index.make_inverted_index('config.toml')
+        return metapy.index.make_inverted_index(path)
 
 def handle_query(string):
     cp = CorpusProcessor()
-    cp.read_json()
-    cp.construct_corpus()
-    cp.write_corpus()
-    cp.write_docid()
-    cp.make_index()
+    # cp.read_json()
+    # cp.construct_corpus()
+    # cp.write_corpus()
+    # cp.write_docid()
+    
+    config_dir = str(os.path.dirname(__file__))
+    current = os.curdir
+    # NOTE (Caleb): I had issues being in the wrong directory when this function would run.
+    # So I just change the working directory to the index_builder.py directory before setting
+    # up Metapy. I change back to the original directory after.
+    os.chdir(config_dir)
+    idx = cp.make_index()
 
-    idx = metapy.index.make_inverted_index('config.toml')
     ranker = metapy.index.OkapiBM25()
     query = metapy.index.Document()
 
     # Search example to test
     query.content(string)
-    print("Stalls Here...")
     top_docs = ranker.score(idx, query, num_results=5)
-    print("Congrats, you passed!")
+
+    print("Returning the top ranked documents.")
+    # Change back to original directory
+    os.chdir(current)
+
+    # Returns top num_results
+    res_data = []
     for num, (d_id, _) in enumerate(top_docs):
         content = idx.metadata(d_id).get('content')
-        # docid = idx.metadata(d_id).get('docid')
-        return {
-            'body': "{}. {}...\n".format(num + 1, content[0:250])
-        }
-        # print("{}. {}...\n".format(num + 1, content[0:250]))
+        res_data.append("[{}] {}...\n".format(num + 1, content[0:250]))
+    return res_data
+
+# AWS Lambda functions pass an event variable to the function handler
+# This is the variable's format.
+mock_aws_lambda_event = [
+    {'version': '2.0', 
+    'routeKey': '$default', 
+    'rawPath': '/', 
+    'rawQueryString': '', 
+    'headers': {
+        'content-length': '18', 
+        'x-amzn-tls-version': 'TLSv1.2', 
+        'x-forwarded-proto': 'https', 
+        'postman-token': '', 
+        'x-forwarded-port': '443', 
+        'x-forwarded-for': '', 
+        'accept': '*/*', 
+        'x-amzn-tls-cipher-suite': '', 
+        'x-amzn-trace-id': '', 
+        'host': '', 
+        'content-type': 'application/json', 
+        'cache-control': 'no-cache', 
+        'accept-encoding': 'gzip, deflate, br', 
+        'user-agent': ''
+        }, 
+    'requestContext': {
+        'accountId': 'anonymous', 
+        'apiId': '', 
+        'domainName': '', 
+        'domainPrefix': '', 
+        'http': {
+            'method': 'POST', 
+            'path': '/', 
+            'protocol': 'HTTP/1.1', 
+            'sourceIp': '184.60.153.38', 
+            'userAgent': 'PostmanRuntime/7.29.2'
+            }, 
+        'requestId': 'eea7ddf5-d85c-42e9-92c2-a03fd2f20db3', 
+        'routeKey': '$default', 
+        'stage': '$default', 
+        'time': '16/Nov/2022:15:17:06 +0000', 
+        'timeEpoch': 1668611826219
+        }, 
+        'body': '{"query" : "test"}', 
+        'isBase64Encoded': False
+    }
+]
+
+def lambda_handler(event, context):
+    if isinstance(event, list):
+        event = event[0]
+    assert isinstance(event, dict), "Event [{}] is not of type dict but [{}]".format(str(event), type(event))
+    query_params = event.get("queryStringParameters", None)
+    body = event.get("body", None)
+    query = event.get("query", None)
+
+    # try to use query params to complete the request
+    if query_params and "query" in query_params:
+        return json.dumps(handle_query(query_params["query"]))
+
+    # try to use the body to complete the request
+    if body and "query" in body:
+        body = json.loads(body)
+        if isinstance(body, list):
+            body = body[0]
+        return json.dumps(handle_query(body["query"]))
+
+    # 
+    if query:
+        return json.dumps(handle_query(query))
+
+    print("Could not successfully query with event of: [{}]".format(str(event)))
+    raise KeyError
