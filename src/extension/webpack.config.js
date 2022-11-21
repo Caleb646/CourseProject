@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-	entry:{login: "./src/main.js"},
+	entry:{main: "./src/main.js"},
 	optimization: {
 		minimize: false
 	},
