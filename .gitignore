@@ -2,3 +2,5 @@
 **__pycache__**
 **cookies**
 **cache**
+**node_modules**
+push_aws_repo.sh
